@@ -76,9 +76,12 @@ def _create_template(context, env, tmpl_file):
     return template.render(context)
 
 
-def _create_landing_page(index_page, context, env):
-    with open(index_page, "r") as f:
-        context["index"] = markdown2.markdown(f.read())
+def _create_landing_page(path, context, env, content=None):
+    if not content:
+        with open(path, "r") as f:
+            content = f.read()
+
+    context["index"] = markdown2.markdown(content)
 
     return _create_template(context, env, "index.html")
 
@@ -149,7 +152,12 @@ def build(ramlfile, config, output=None, ramlconfig=None):
     # create landing page
     rel_directory = os.path.dirname(ramlfile)
     index_md = os.path.join(rel_directory, "index.md")
-    landing_page = _create_landing_page(index_md, site_context, env)
+    content = ""
+    if not os.path.isfile(index_md)\
+        and context.api.documentation:
+        for doc in context.api.documentation:
+            content += "# {title}\r\n{content}\r\n".format(title=doc.title, content=doc.content)
+    landing_page = _create_landing_page(index_md, site_context, env, content=content)
     _save_template(landing_page, output)
 
     # save static/assets

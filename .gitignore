@@ -36,3 +36,10 @@ coverage.xml
 
 # Sphinx
 docs/_build
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Generated
+output/

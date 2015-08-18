@@ -3,6 +3,7 @@
 
 from __future__ import absolute_import, division, print_function
 
+import os
 from six import iteritems, iterkeys
 import yaml
 
@@ -39,6 +40,9 @@ def _set_defaults(config):
 
 
 def setup_config(config_file):
+    if not os.path.isfile(config_file):
+        return DEFAULT_CONFIG
+
     with open(config_file) as c:
         config = yaml.load(c)
 

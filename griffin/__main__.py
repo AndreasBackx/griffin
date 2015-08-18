@@ -29,7 +29,7 @@ def main():
                               writable=True,
                               exists=False))
 @click.option("-c", "--config",
-              type=click.Path(exists=True,
+              type=click.Path(exists=False,
                               dir_okay=False,
                               readable=True,
                               resolve_path=True),
