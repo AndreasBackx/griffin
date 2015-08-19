@@ -7,11 +7,11 @@
       {% elif scheme is string %}
         <dd{% if loop.first %} class="vert-padding"{% endif %}>{{ scheme }}</dd>
       {% elif scheme is dictionary %}
-        {% for key, value in scheme.iteritems() %}
+        {% for key, value in scheme.items() %}
           <dd{% if loop.first %} class="vert-padding"{% endif %}>
             {{ key|schemes }}  {% if value is not dictionary %}{{ value }}{% endif %}
               {% if value is dictionary %}
-                {% for k, v in value.iteritems() %}
+                {% for k, v in value.items() %}
                   {% if k == 'scopes' and v %}
                     <dt class="second-level">scopes</dt>
                     {% for scope in v %}<dd>{{ scope }}</dd>{% endfor %}

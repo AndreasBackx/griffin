@@ -3,6 +3,7 @@
 
 from __future__ import absolute_import, division, print_function
 
+import shutil
 import sys
 if sys.version_info[0] == 2:
     from io import open
@@ -61,7 +62,10 @@ def _save_template(template, output):
 #####
 def _set_jinja_env(template_path):
     loader = jinja2.FileSystemLoader(template_path)
-    env = jinja2.Environment(loader=loader)
+    env = jinja2.Environment(
+        loader=loader,
+        trim_blocks=True,
+        lstrip_blocks=True)
     env.tests["a_list"] = a_list
     env.tests["dictionary"] = dictionary
     env.filters["jsonify"] = _pretty_compact_json
@@ -86,7 +90,7 @@ def _create_landing_page(path, context, env, content=None):
     return _create_template(context, env, "index.html")
 
 
-def _custom_css(config, template_path, output):
+def _custom_css(config, template_path, output, env):
     custom_css = config.get("custom_css", {})
     rest_colors = custom_css.get("rest_colors", {})
     navbar_color = custom_css.get("navbar_color", {})
@@ -94,8 +98,6 @@ def _custom_css(config, template_path, output):
     context = dict(rest_colors=rest_colors,
                    navbar_color=navbar_color,
                    fonts=fonts)
-    loader = jinja2.FileSystemLoader(template_path)
-    env = jinja2.Environment(loader=loader)
 
     _template = env.get_template("custom.css")
     template = _template.render(context)
@@ -131,6 +133,16 @@ def build(ramlfile, config, output=None, ramlconfig=None):
     if not output:
         output = config.get("output_dir")
 
+    # Reset the output folder. The whole folder is not deleted and remade
+    # so a server like browser-sync can detect changes.
+    if os.path.exists(output):
+        for f in os.listdir(output):
+            path = os.path.join(output, f)
+            if os.path.isfile(path):
+                os.unlink(path)
+            elif os.path.isdir(path):
+                shutil.rmtree(path)
+
     # set up Jinja templates
     template_path = _template_path(config)
     env = _set_jinja_env(template_path)
@@ -153,11 +165,15 @@ def build(ramlfile, config, output=None, ramlconfig=None):
     rel_directory = os.path.dirname(ramlfile)
     index_md = os.path.join(rel_directory, "index.md")
     content = ""
-    if not os.path.isfile(index_md)\
-        and context.api.documentation:
+    if not os.path.isfile(index_md) and context.api.documentation:
         for doc in context.api.documentation:
-            content += "# {title}\r\n{content}\r\n".format(title=doc.title, content=doc.content)
-    landing_page = _create_landing_page(index_md, site_context, env, content=content)
+            content += "# {title}\r\n{content}\r\n".format(
+                title=doc.title,
+                content=doc.content)
+    landing_page = _create_landing_page(
+        index_md,
+        site_context, env,
+        content=content)
     _save_template(landing_page, output)
 
     # save static/assets
@@ -166,6 +182,6 @@ def build(ramlfile, config, output=None, ramlconfig=None):
     assets_path = os.path.join(output, "assets")
 
     if config.get("custom_css"):
-        _custom_css(config, template_path, assets_path)
+        _custom_css(config, template_path, assets_path, env)
     _copy_media_files(theme_path, assets_path)
     _copy_media_files(static_path, assets_path)

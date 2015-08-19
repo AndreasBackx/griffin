@@ -48,11 +48,7 @@ Continue onto `usage`_ to get started on using ``griffin``.
 Supported Python/Systems
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. warning::
-  currently runs with Python 2.7 - but will get up to 3.3+ and PyPy
-
-Both Linux and OS X are supported.
-
+Griffin runs on Python 2.6, 2.7, 3.3+ and pypy. Both Linux and OS X are supported.
 
 
 Developer Setup

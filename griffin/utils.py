@@ -3,9 +3,14 @@
 
 from __future__ import absolute_import, division, print_function
 
-from collections import OrderedDict
+try:
+    from collections import OrderedDict
+except ImportError:
+    # Python <=2.6
+    from ordereddict import OrderedDict
 import os
 import shutil
+import six
 
 
 class OrderedDefaultDict(OrderedDict):
@@ -49,7 +54,7 @@ def _pretty_compact_json(obj, indent=2, max_strlen=20):
                 ret += "[" + ", ".join(map(str, o)) + "]"
             elif all(isinstance(item, float) for item in o):
                 ret += "[" + ", ".join(map(lambda x: '%.7g' % x, o)) + "]"
-            elif all((isinstance(item, basestring) and
+            elif all((isinstance(item, six.string_types) and
                      len(item) < max_strlen) for item in o):
                 ret += "[" + ", ".join(map(lambda x: '"%s"' % x, o)) + "]"
             # Expanded lists
@@ -66,14 +71,14 @@ def _pretty_compact_json(obj, indent=2, max_strlen=20):
         elif isinstance(o, dict):
             ret += "{" + newline
             comma = ""
-            for k, v in o.iteritems():
+            for k, v in o.items():
                 ret += comma
                 comma = ",\n"
                 ret += space * indent * (level + 1)
                 ret += '"' + str(k) + '":' + space
                 ret += to_json(v, level + 1)
             ret += newline + space * indent * level + "}"
-        elif isinstance(o, basestring):
+        elif isinstance(o, six.string_types):
             ret += '"' + o + '"'
         elif isinstance(o, bool):
             ret += "true" if o else "false"
